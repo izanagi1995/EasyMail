@@ -1,0 +1,33 @@
+{
+  "name": "EasyMail",
+  "version": "1.0.0",
+  "description": "A webserver implementation in Node.JS with a web interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/izanagi1995/EasyMail.git"
+  },
+  "keywords": [
+    "mail",
+    "server",
+    "web-interface"
+  ],
+  "author": "Nicolas Surleraux <nsurleraux@gmail.com> (http://izanagi1995.info/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/izanagi1995/EasyMail/issues"
+  },
+  "homepage": "https://github.com/izanagi1995/EasyMail",
+  "dependencies": {
+    "Haraka": "^2.6.1",
+    "body-parser": "^1.13.3",
+    "ejs": "^2.3.3",
+    "express": "^4.13.3",
+    "express-session": "^1.11.3",
+    "mailparser": "^0.5.2",
+    "mongoose": "^4.1.5"
+  }
+}
