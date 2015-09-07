@@ -15,7 +15,7 @@ echo "========================"
 echo
 echo "This software will download and install EasyMail and all required dependencies. WARNING : Do not cancel installation during the process!"
 echo "EasyMail will be installed in the current directory which is $DIR"
-read -p "Continue? " -n 1 -r
+read -p "Continue? (Y/N)"
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -35,7 +35,7 @@ then
     echo "Starting MongoDB without authentification"
     mkdir /data/
     mkdir /data/db
-    $REAL_USER mongod --fork --logpath /var/log/mongodb.log --port 27017 --dbpath /data/db
+    sudo -u $REAL_USER mongod --fork --logpath /var/log/mongodb.log --port 27017 --dbpath /data/db
     read -p 'Username for the MongoDB admin: ' mUser
     echo ""
     read -sp 'Password: ' mPass
