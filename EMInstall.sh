@@ -14,6 +14,9 @@ echo "========================"
 echo "   EasyMail Installer   "
 echo "========================"
 echo
+
+echo "Welcome, $REAL_USER"
+echo
 echo "This software will download and install EasyMail and all required dependencies. WARNING : Do not cancel installation during the process!"
 echo "EasyMail will be installed in the current directory which is $DIR"
 read -p "Continue? (Y/N)" < /dev/tty
