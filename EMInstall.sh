@@ -1,5 +1,5 @@
 #!/bin/bash
-REAL_USER = $SUDO_USER
+REAL_USER=`who am i | awk '{print $1}'`
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -16,6 +16,7 @@ echo
 echo "This software will download and install EasyMail and all required dependencies. WARNING : Do not cancel installation during the process!"
 echo "EasyMail will be installed in the current directory which is $DIR"
 read -p "Continue? " -n 1 -r
+echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
   
@@ -36,7 +37,9 @@ then
     mkdir /data/db
     $REAL_USER mongod --fork --logpath /var/log/mongodb.log --port 27017 --dbpath /data/db
     read -p 'Username for the MongoDB admin: ' mUser
+    echo ""
     read -sp 'Password: ' mPass
+    echo ""
     sudo -u $REAL_USER mongo --eval "db.getSiblingDB('admin').createUser({user:\"$mUser\",pwd:\"$mPass\",roles:[{role:\"userAdminAnyDatabase\",db:\"admin\"}]})"
     echo "User created! Restarting MongoDB with authentification"
     killall mongod
@@ -71,7 +74,7 @@ then
     echo "Downloading webInterface"
     cd "$DIR"
     mkdir webServer
-    cd webServer && wget https://raw.githubusercontent.com/izanagi1995/EasyMail/master/archives/webServer.zip
+    cd webServer && wget https://raw.githubusercontent.com/izanagi1995/EasyMail/master/webServer.zip
     unzip webInterface.zip
     echo "webInterface OK"
     echo "============================="
