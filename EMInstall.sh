@@ -16,7 +16,7 @@ echo "========================"
 echo
 echo "This software will download and install EasyMail and all required dependencies. WARNING : Do not cancel installation during the process!"
 echo "EasyMail will be installed in the current directory which is $DIR"
-read -p "Continue? (Y/N)"
+read -p "Continue? (Y/N)" < /dev/tty
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
@@ -38,9 +38,9 @@ then
     mkdir /data/db
     chown -R $REAL_USER_ID /data/db
     sudo -u $REAL_USER mongod --fork --logpath /var/log/mongodb.log --port 27017 --dbpath /data/db
-    read -p 'Username for the MongoDB admin: ' mUser
+    read -p 'Username for the MongoDB admin: ' mUser < /dev/tty
     echo ""
-    read -sp 'Password: ' mPass
+    read -sp 'Password: ' mPass < /dev/tty
     echo ""
     sudo -u $REAL_USER mongo --eval "db.getSiblingDB('admin').createUser({user:\"$mUser\",pwd:\"$mPass\",roles:[{role:\"userAdminAnyDatabase\",db:\"admin\"}]})"
     echo "User created! Restarting MongoDB with authentification"
@@ -84,9 +84,9 @@ then
     echo "============================="
 
     echo "First user configuration : "
-    read -p 'Domain to configure (ex : izanagi1995.info) : ' domain
-    read -p 'User to configure (ex : test) : ' user
-    read -sp 'Password : ' pass
+    read -p 'Domain to configure (ex : izanagi1995.info) : ' domain < /dev/tty
+    read -p 'User to configure (ex : test) : ' user < /dev/tty
+    read -sp 'Password : ' pass < /dev/tty
     sudo -u $REAL_USER mkdir -p "$DIR/haraka_run/mails/$domain/$user/{INBOX,SENT,SPAM,TRASH}"
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').createCollection('users',{autoIndexID:true}"
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').insert({username:\"$user@$domain\",password:\"$pass\"})"
