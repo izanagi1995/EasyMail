@@ -1,5 +1,6 @@
 #!/bin/bash
 REAL_USER=`who am i | awk '{print $1}'`
+REAL_USER_ID="$(id -u "$REAL_USER")"
 
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -35,6 +36,7 @@ then
     echo "Starting MongoDB without authentification"
     mkdir /data/
     mkdir /data/db
+    chown -R $REAL_USER_ID /data/db
     sudo -u $REAL_USER mongod --fork --logpath /var/log/mongodb.log --port 27017 --dbpath /data/db
     read -p 'Username for the MongoDB admin: ' mUser
     echo ""
