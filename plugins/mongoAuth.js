@@ -25,7 +25,7 @@ exports.get_plain_passwd = function(user, cb) {
 	var c = server.notes.mongoose;
 
 
-	var userModel = server.notes.userModel;
+	var userModel = process.env.userModel;
 	var password = 'UNDEFINED';
 	var query = userModel.find({username : user});
 	query.exec(function (err, res){
