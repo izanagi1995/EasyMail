@@ -9,16 +9,27 @@ var app = express();
 var ini = require('ini');
 var fs = require('fs');
 var cp = require('child_process');
+var MailParser = require("mailparser").MailParser;
 
 var config = ini.parse(fs.readFileSync('config/mongodb', 'utf-8'));
 
-var mongoConn = mongoose.createConnection('mongodb://'+config.mUser+':'+config.mPass+'@localhost:27017/easymail');
+var EasyMail = this;
+
+var mongoConn = mongoose.createConnection('mongodb://'+config.user+':'+config.pass+'@localhost:27017/easymail');
 var userSchema = new mongoose.Schema({
     username : String,
     password : String
 });
 var userModel = mongoConn.model('users', userSchema);
-var envir;
+var allUsersQuery = userModel.find();
+allUsersQuery.exec(function(err, res){
+    if (err) {throw err;}
+    console.log('Registered users :');
+    for(var i in res){
+	console.log(res[i].username);
+    }
+});
+var envir = [];
 envir['mongo'] = mongoConn;
 envir['userModel'] = userModel;
 
@@ -42,14 +53,14 @@ exports.startWServer = function(){
 exports.getPassword = function(user, callback) {
     var query = userModel.find({username : user});
     query.exec(function (err, res){
-        if(res.length == 0){return callback(null);}
         if (err) {throw err;}
+        if(res.length == 0){return callback(null);}
         callback(res[0].password);
     });
 }
 
 exports.checkPassword = function(user, inputPW, callback){
-    this.getPassword(user, function(pwd){
+    EasyMail.getPassword(user, function(pwd){
         if(null===pwd){return callback(false);}
         if(pwd===inputPW){
             return callback(true);
@@ -59,7 +70,7 @@ exports.checkPassword = function(user, inputPW, callback){
 }
 
 exports.getMails = function(user, domain, folder, limit, callback){
-    var DOMAIN = __dirname + "/mails/" + domain;
+    var DOMAIN = __dirname + "/haraka_run/mails/" + domain;
     var USER = DOMAIN + "/" + user;
     var INBOX = USER + "/" + folder + "/";
     var res = [];
@@ -83,11 +94,10 @@ exports.getMails = function(user, domain, folder, limit, callback){
     });
 }
 
-var RES_FOLDER = __dirname + "/../webServer/public";
-var pl = this;
+var RES_FOLDER = __dirname + "/webServer/public";
 app.set('views', RES_FOLDER);
 app.engine('html', require('ejs').renderFile);
-app.use(session({secret: 's2a9xU23GiPSn4E1'}));
+app.use(session({secret: 's2a9xU23GiPSn4E1',resave: true, saveUninitialized: true}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true})); 
 app.disable('etag');
@@ -114,7 +124,7 @@ app.get('/',function(req,res){
 
 app.post('/login',function(req,res){
     sess=req.session;
-    this.checkPassword(req.body.email, req.body.pass, function(success){
+    EasyMail.checkPassword(req.body.email, req.body.pass, function(success){
         if(!success){
             res.end('bad');
             return;
@@ -133,7 +143,7 @@ app.get('/mails/:folder', function(req, res){
     {
         //res.render('loading.html', {user : sess.email});
         var split = sess.email.split('@');
-        this.getMails(split[0], split[1], folder, 50, function(err, mObjects){
+        EasyMail.getMails(split[0], split[1], folder, 50, function(err, mObjects){
             if(err){
                 res.render('wrong.html', {error : err});
                 return;

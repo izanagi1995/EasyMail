@@ -61,6 +61,11 @@ then
     sudo -u $REAL_USER npm install
     #Installing haraka
     sudo -u $REAL_USER ./node_modules/Haraka/bin/haraka -i haraka_run
+sudo -u $REAL_USER cat >haraka_run/config/plugins << EOL
+auth/mongoAuth
+customMailQueue
+rcpt_to.in_host_list
+EOL
     echo "Haraka setup : OK"
 
     echo "Writing config for MongoDB"
@@ -104,6 +109,4 @@ then
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').createCollection('users',{autoIndexID:true})"
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').users.insert({username:\"$user@$domain\",password:\"$pass\"})"
     sudo -u $REAL_USER echo $domain >> haraka_run/config/host_list
-
 fi
-	
