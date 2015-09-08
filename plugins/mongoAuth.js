@@ -38,14 +38,8 @@ exports.get_plain_passwd = function(user, cb) {
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
 	var plugin = this;   
 	this.get_plain_passwd(user, function (plain_pw) {
-		if (plain_pw === null) {
-			return cb(false);
-		}
-
-		if(passwd == plain_pw){
-			return cb(true);
-		}
-
+		if (passwd == plain_pw) return cb(true);
+		
 		return cb(false);
 	});
 }
