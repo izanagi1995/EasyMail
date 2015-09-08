@@ -22,19 +22,7 @@ read -p "Continue? (Y/N)" < /dev/tty
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-    if ! node_loc="$(type -p "node")" || [ -z "$node_loc" ]; then
-      echo "Node.JS not found : Installing..."
-      curl --silent --location https://deb.nodesource.com/setup_0.12 | bash -
-      apt-get update
-      apt-get --yes --force-yes install nodejs
-      apt-get --yes --force-yes install mongodb-org-server
-      if [[ $? > 0 ]]
-      then
-        echo "Node.JS installation failed... Aborting!"
-        exit
-      fi
-    fi
-
+  
     if ! foobar_loc="$(type -p "mongo")" || [ -z "$foobar_loc" ]; then
       echo "MongoDB not found : Installing..."
       apt-get update
@@ -60,7 +48,7 @@ then
     echo ""
     read -sp 'Password: ' mPass < /dev/tty
     echo ""
-    sudo -u $REAL_USER mongo --eval "db.getSiblingDB('admin').createUser({user:\"$mUser\",pwd:\"$mPass\",roles:[{role:\"root\", db:\"admin\"}]})"
+    sudo -u $REAL_USER mongo --eval "db.getSiblingDB('admin').createUser({user:\"$mUser\",pwd:\"$mPass\",roles:[{role:\"root\", db:\"admin\"}, {role:\"dbOwner\", db:\"easymail\"}]})"
     echo "User created! Restarting MongoDB with authentification"
     sudo -u $REAL_USER mongo admin --eval "db.shutdownServer()"
     echo "Waiting 5 seconds for MongoDB halt..."
@@ -111,7 +99,7 @@ then
     read -p 'Domain to configure (ex : izanagi1995.info) : ' domain < /dev/tty
     read -p 'User to configure (ex : test) : ' user < /dev/tty
     read -sp 'Password : ' pass < /dev/tty
-    sudo -u $REAL_USER mkdir -p "$DIR/haraka_run/mails/$domain/$user/{INBOX,SENT,SPAM,TRASH}"
+    sudo -u $REAL_USER mkdir -p $DIR/haraka_run/mails/$domain/$user/{INBOX,SENT,SPAM,TRASH}
 
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').createCollection('users',{autoIndexID:true})"
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').users.insert({username:\"$user@$domain\",password:\"$pass\"})"
