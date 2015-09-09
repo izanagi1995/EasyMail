@@ -15,7 +15,16 @@ var config = ini.parse(fs.readFileSync('config/mongodb', 'utf-8'));
 
 var EasyMail = this;
 
-var mongoConn = mongoose.createConnection('mongodb://'+config.user+':'+config.pass+'@localhost:27017/easymail');
+
+var opt = {
+               user: config.user,
+               pass: config.pass,
+               auth: {
+                    authdb: 'admin'
+               }
+          };
+var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
+
 var userSchema = new mongoose.Schema({
     username : String,
     password : String
