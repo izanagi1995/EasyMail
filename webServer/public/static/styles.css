@@ -1,0 +1,139 @@
+@import url(https://fonts.googleapis.com/css?family=Lobster);
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro);
+
+*{box-sizing : border-box;}
+
+
+html, body {
+	margin:0;
+	padding:0;
+	width: 100%;
+	height: 100%;
+}
+
+body.login{
+	background: url(startup-photos-b1.jpg) no-repeat center center fixed; 
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+	width: 100%;
+	height: 100%;
+}
+
+.login .outer, .loading .outer {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.login .middle, .loading .middle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.login .inner, .loading .inner {
+    margin-left: auto;
+    margin-right: auto; 
+    width: 50%;
+    text-align: center;
+}
+
+.login h1{
+	font-family: 'Lobster', cursive;
+	font-size: 64px;
+	color: #E74C3C;
+	margin: 20px;
+}
+.login input{
+	width: 50%;
+	margin-bottom: 10px !important;
+	padding: 10px 0;
+}
+.login .field{
+	padding-left: 10px;
+}
+.login #submit{
+	background-color: #2ECC71;
+	border: 0px;
+	border-radius: 0px;
+	color: white;
+}
+.login .message{
+	color: #E74C3C;
+	font-weight: bold;
+}
+
+body.loading{
+	background-color: #ABB7B7;
+}
+
+.loading h1{
+	font-family: 'Lobster', cursive;
+	font-size: 64px;
+	color: #D2D7D3;
+	margin: 20px;
+	transition: 0.5s all;
+}
+.loading h1:hover{
+	color: #E74C3C;
+}
+.loading .message{
+	font-weight: bold;
+}
+
+body.mails{
+	background-color : #ECECEC;
+	width: 100%;
+	height: 100%;
+	font-family: 'Source Sans Pro', sans-serif;
+
+}
+.mails > #menu-holder, .mails #holder{
+	display: inline-block;
+}
+.mails > #menu-holder{
+	height: 100%;
+	width: 25%;
+	border-right: 1px solid black;
+	float: left;
+}
+.mails > #holder{
+	width: 75%;
+	padding: 20px;
+}
+.mails ul{
+	list-style: none;
+	padding: 0px;
+	margin: 0px;
+}
+.mails ul li a{
+	text-decoration: none;
+	color: black;
+	margin-left: 20px;
+}
+.mails h1{
+	font-family: 'Lobster', cursive;
+	font-size: 64px;
+	color: #E74C3C;
+	margin: 0;
+	text-align: center;
+}
+.mails #mail-viewer{
+	border-spacing: 0px;
+	width: 100%;
+}
+.mails #mail-viewer tr:hover{
+	background-color: #BDC3C7;
+}
+.mails #mail-viewer tr:first-child td{
+	border-top: 1px solid black;
+}
+.mails #mail-viewer tr td{
+	border-bottom: 1px solid black;
+	cursor: pointer;
+}
+.mails #mail-viewer tr{
+	padding-right: 10px;
+}

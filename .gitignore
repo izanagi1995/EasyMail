@@ -29,5 +29,4 @@ node_modules
 #Haraka running directory
 haraka_run
 #Dev webServer
-webServer
 config

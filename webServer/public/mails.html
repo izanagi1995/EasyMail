@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>WebMail Interface | Mails</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+	$(function(){
+		$("tr").click(function(){
+			var tr = $(this);
+			var link = tr.data("mail");
+			window.location.href = "<%= box %>/"+link;
+		})
+	});
+</script>
+<link rel="stylesheet" type="text/css" href="/static/styles.css">
+<link rel="stylesheet" type="text/css" href="/static/normalize.css">
+</head>
+<body class="mails">
+	<div id="menu-holder">
+		<ul id="menu">
+			<li class="title"><h1>WebMail</h1></li>
+			<li><a href="INBOX">Boite de reception</a></li>
+			<li><a href="SPAM">SPAM</a></li>
+			<li><a href="TRASH">Corbeille</a></li>
+		</ul>
+	</div>
+	<div id="holder">
+	<table id="mail-viewer">
+		<% var months = ["Jan.", "Fev.", "Mar.", "Avr.", "Mai", "Juin", "Juil.", "Aout", "Sep.", "Oct.", "Nov.", "Dec."]; %>
+	    <% for(var i=0; i<mails.length; i++){ %>
+			<tr class="mail" data-mail="view/<%= mails[i].file %>">
+				<td class="from">
+					<% if(("name" in mails[i].from[0])&&mails[i].from[0].name.length > 0){ %>
+					<%= mails[i].from[0].name %>
+					<% }else{ %>
+					<%= mails[i].from[0].address %>
+					<% } %>
+				</td>
+				<td class="subject">
+					<%= mails[i].subject %>
+				</td>
+				<td class="date">
+					<%= mails[i].date.getDate() + " " + months[mails[i].date.getMonth()] + " " + mails[i].date.getFullYear() %>
+				<td class="attachments">
+					<%= mails[i].attachments %>
+				</td>
+			</tr>
+		<% } %>
+	</table>
+	</div>
+</body>
+</html>

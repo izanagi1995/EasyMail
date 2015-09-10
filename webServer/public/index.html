@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>WebMail Interface</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="static/styles.css">
+<link rel="stylesheet" type="text/css" href="static/normalize.css">
+<script>
+$(document).ready(function(){
+    var email,pass;
+    $("#submit").click(function(){
+        email=$("#email").val();
+        pass=$("#password").val();
+        /*
+        * Perform some validation here.
+        */
+        $.post("http://test.izanagi1995.info:3000/login",{email:email,pass:pass},function(data){       
+            if(data==='done')          
+            {
+                window.location.href="/mails/INBOX";
+            }else{
+            	$(".message").text("Bad user or password");
+            }
+        });
+    });
+});
+</script>
+</head>
+<body class="login">
+    <div class="outer">
+    <div class="middle">
+    <div class="inner">
+    <h1>WebMail</h1>
+    <input type="text" size="40" placeholder="Adresse mail" class="field" id="email"><br />
+    <input type="password" size="40" placeholder="Mot de passe" class="field" id="password"><br />
+    <input type="button" value="Connexion" id="submit">
+    <div class="message"></div>
+
+    </div>
+    </div>
+    </div>
+	
+</body>
+</html>
