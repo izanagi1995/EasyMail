@@ -1,0 +1,33 @@
+<html>
+<head>
+<title>WebMail Interface | Mails</title>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/styles.css">
+<link rel="stylesheet" type="text/css" href="/static/normalize.css">
+</head>
+<body class="mails">
+	<div id="menu-holder">
+		<ul id="menu">
+			<li class="title"><h1>WebMail</h1></li>
+			<li><a href="INBOX">Boite de reception</a></li>
+			<li><a href="SPAM">SPAM</a></li>
+			<li><a href="TRASH">Corbeille</a></li>
+		</ul>
+	</div>
+	<div id="holder">
+		<div class="mail-infos">
+			<% var months = ["Jan.", "Fev.", "Mar.", "Avr.", "Mai", "Juin", "Juil.", "Aout", "Sep.", "Oct.", "Nov.", "Dec."]; %>
+			<div>From :<% if(("name" in mail.from[0])&&mail.from[0].name.length > 0){ %>
+				<%= mail.from[0].name %>
+			<% }else{ %>
+				<%= mail.from[0].address %>
+			<% } %></div>
+			<div>Subject : <%= mail.subject %></div>
+			<div>Date : <%= mail.date.getDate() + " " + months[mail.date.getMonth()] + " " + mail.date.getFullYear() %>
+		</div>
+		<div class="mail-body">
+			<%- mail.html %>
+		</div>
+	</div>
+</body>
+</html>
