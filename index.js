@@ -102,6 +102,16 @@ exports.getMails = function(user, domain, folder, limit, callback){
         
     });
 }
+exports.getMail = function(user, domain, folder, mail, callback){
+    var DOMAIN = __dirname + "/haraka_run/mails/" + domain;
+    var USER = DOMAIN + "/" + user;
+    var INBOX = USER + "/" + folder + "/";
+    var mailparser = new MailParser();
+    mailparser.on("end", function(mObject){
+        return callback(null, mObject);
+    });
+    fs.createReadStream(INBOX+mail).pipe(mailparser);
+}
 
 var RES_FOLDER = __dirname + "/webServer/public";
 app.set('views', RES_FOLDER);
@@ -171,9 +181,28 @@ app.get('/mails/:folder', function(req, res){
     }
 });
 
-
-
-
+app.get('/mails/:folder/view/:mail', function(req, res){
+    var folder = req.params.folder;
+    var mail = req.params.mail;
+    sess=req.session;
+    if(sess.email)
+    {
+        //res.render('loading.html', {user : sess.email});
+        var split = sess.email.split('@');
+        EasyMail.getMail(split[0], split[1], folder, mail, function(err, mObject){
+            if(err){
+                res.render('wrong.html', {error : err});
+                return;
+            }
+            
+            res.render('view.html', {mail : mObject});
+        });
+    }
+    else
+    {
+        res.redirect('/');
+    }
+});
 
 app.get('/logout',function(req,res){
     req.session.destroy(function(err){
