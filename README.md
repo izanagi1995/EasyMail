@@ -18,6 +18,12 @@ sudo sh EMInstall.sh
 - POP3 (0%)
 - Console GUI (0%)
 
+## Pull request
+# Main APP
+Feel free to start a pull request. Please, 4 spaces indentation. No tabs.
+# Web interface
+The web interface is zipped AND unzipped. Start pull request with a zip and folder update!
+
 ## Questions?
 - mail : nsurleraux@gmail.com
 - skype : nicokarbonos
