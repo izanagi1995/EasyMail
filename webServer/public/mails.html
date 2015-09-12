@@ -8,7 +8,30 @@
 			var tr = $(this);
 			var link = tr.data("mail");
 			window.location.href = "<%= box %>/"+link;
-		})
+		});
+		$("#editor").hide();
+		$("#new").click(function(){
+			$("#editor").show();
+		});
+		$("#send").click(function(){
+			var to=$("#to").val();
+	        var subject=$("#subject").val();
+	        var body=$("#body").val();
+	        /*
+	        * Perform some validation here.
+	        */
+	        $.post("http://test.izanagi1995.info:3000/send",{to:to,subject:subject,body:body},function(data){       
+	            if(data==='done')          
+	            {
+	                $("#editor").hide();
+	            }else{
+	            	alert('Oops!');
+	            }
+	        });
+		});
+		$("#check").click(function(){
+			location.reload();
+		});
 	});
 </script>
 <link rel="stylesheet" type="text/css" href="/static/styles.css">
@@ -24,6 +47,10 @@
 		</ul>
 	</div>
 	<div id="holder">
+		<div id="user-menu">
+			<button id="check">Check mails</button>
+			<button id="new">New Mail</button>
+		</div>
 	<table id="mail-viewer">
 		<% var months = ["Jan.", "Fev.", "Mar.", "Avr.", "Mai", "Juin", "Juil.", "Aout", "Sep.", "Oct.", "Nov.", "Dec."]; %>
 	    <% for(var i=0; i<mails.length; i++){ %>
@@ -46,6 +73,12 @@
 			</tr>
 		<% } %>
 	</table>
+	</div>
+	<div id="editor">
+		<input type="text" placeholder="someone@example.com" id="to">
+		<input type="text" placeholder="Subject" id="subject">
+		<textarea id="body"></textarea>
+		<button id="send">Send</button>
 	</div>
 </body>
 </html>

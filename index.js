@@ -9,7 +9,9 @@ var app = express();
 var ini = require('ini');
 var fs = require('fs');
 var cp = require('child_process');
-var MailParser = require("mailparser").MailParser;
+var MailParser = require('mailparser').MailParser;
+var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 
 var config = ini.parse(fs.readFileSync('config/mongodb', 'utf-8'));
 
@@ -39,8 +41,8 @@ allUsersQuery.exec(function(err, res){
     }
 });
 var envir = [];
-envir['mongo'] = mongoConn;
-envir['userModel'] = userModel;
+envir['mongoUser'] = config.user;
+envir['mongoPass'] = config.pass;
 
 
 var haraka = cp.spawn('./node_modules/Haraka/bin/haraka', ['-c', 'haraka_run'], {env:envir});
@@ -53,11 +55,6 @@ haraka.stdout.on('data', function (data) {
 haraka.stderr.on('data', function (data) {
     console.log('ERROR (Haraka) : ' + data);
 });
-
-
-exports.startWServer = function(){
-
-}
 
 exports.getPassword = function(user, callback) {
     var query = userModel.find({username : user});
@@ -214,6 +211,38 @@ app.get('/logout',function(req,res){
             res.redirect('/');
         }
     });
+});
+app.post('/send',function(req, res){
+    sess=req.session;
+    if(sess.email)
+    {
+        EasyMail.getPassword(sess.email, function(pwd){
+            var options =   {
+                            host: 'localhost',
+                            port: 587,
+                            auth: {
+                                user: sess.email,
+                                pass: pwd
+                            }
+                        };
+            console.log("pwd is "+pwd);
+            var transporter = nodemailer.createTransport(options);
+            console.log("Transporter created");
+            transporter.sendMail({
+                from: sess.email,
+                to: req.body.to,
+                subject: req.body.subject,
+                text: req.body.body
+            });
+            console.log("Go!");
+        });
+        res.end('done');
+        
+    }
+    else
+    {
+        res.redirect('/');
+    }
 });
 
 var server = app.listen(3000, function(){

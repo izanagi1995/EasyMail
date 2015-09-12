@@ -137,3 +137,16 @@ body.mails{
 .mails #mail-viewer tr{
 	padding-right: 10px;
 }
+.mails #editor{
+	height: 200px;
+	position: absolute;
+	bottom: 0px;
+	right: 10%;
+	border: 1px solid black;
+	width: 20%;
+	padding: 5px;
+}
+.mails #editor * {
+	display: block;
+	width: 100%;
+}
