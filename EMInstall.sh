@@ -10,6 +10,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
+#Starting installer
 echo "========================"
 echo "   EasyMail Installer   "
 echo "========================"
@@ -22,7 +23,7 @@ read -p "Continue? (Y/N)" < /dev/tty
 echo ""
 if [[ $REPLY =~ ^[Yy]$ ]]
 then
-  
+    #If mongo is not found : setup
     if ! foobar_loc="$(type -p "mongo")" || [ -z "$foobar_loc" ]; then
       echo "MongoDB not found : Installing..."
       apt-get update
@@ -34,16 +35,17 @@ then
         exit
       fi
     fi
+    #Configuration of MongoDB
     echo "Stopping existing MongoDB process"
     killall mongod
     sleep 3
     rm /data/db/mongod.lock
     echo "Starting MongoDB without authentification"
-    mkdir /data/
-    mkdir /data/db
-    chown -R $REAL_USER_ID /data/db
+    mkdir /var/
+    mkdir /var/easymail_db
+    chown -R $REAL_USER_ID /var/easymail_db
     cd $DIR
-    sudo -u $REAL_USER mongod --fork --logpath mongodb.log --port 27017 --dbpath /data/db
+    sudo -u $REAL_USER mongod --fork --logpath mongodb.log --port 27017 --dbpath /var/easymail_db
     read -p 'Username for the MongoDB admin: ' mUser < /dev/tty
     echo ""
     read -sp 'Password: ' mPass < /dev/tty
@@ -53,9 +55,10 @@ then
     sudo -u $REAL_USER mongo admin --eval "db.shutdownServer()"
     echo "Waiting 5 seconds for MongoDB halt..."
     sleep 5
-    sudo -u $REAL_USER mongod --fork --logpath mongodb.log --port 27017 --dbpath /data/db --auth
+    sudo -u $REAL_USER mongod --fork --logpath mongodb.log --port 27017 --dbpath /var/easymail_db --auth
     echo "MongoDB setup : OK!"
-    echo "Downloading Haraka... Please wait..."
+    #Download all deps
+    echo "Downloading dependencies... Please wait..."
     #DO THE DOWNLOAD FROM THE MAIN GITHUB REPO
     wget https://raw.githubusercontent.com/izanagi1995/EasyMail/master/package.json
     sudo -u $REAL_USER npm install
@@ -74,7 +77,7 @@ EOL
     sudo -u $REAL_USER echo "user=$mUser" >> config/mongodb
     sudo -u $REAL_USER echo "pass=$mPass" >> config/mongodb
     echo "Config writed"
-
+    #Fetching plugins
     echo "Downloading plugins..."
     cd haraka_run/plugins/auth
     sudo -u $REAL_USER wget https://raw.githubusercontent.com/izanagi1995/EasyMail/master/plugins/mongoAuth.js
