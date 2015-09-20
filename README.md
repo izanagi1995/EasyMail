@@ -54,9 +54,9 @@ sudo sh EMInstall.sh
 - Console GUI (0%)
 
 ## Pull request
-# Main APP
+### Main APP
 Feel free to start a pull request. Please, 4 spaces indentation. No tabs.
-# Web interface
+### Web interface
 The web interface is zipped AND unzipped. Start pull request with a zip and folder update!
 
 ## Questions?
