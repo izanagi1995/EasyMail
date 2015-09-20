@@ -3,6 +3,21 @@ var mongoose = require('mongoose');
 var net_utils = require('./net_utils');
 var crypto = require('crypto');
 
+
+var opt = {
+               user: process.env.mongoUser,
+               pass: process.env.mongoPass,
+               auth: {
+                    authdb: 'admin'
+               }
+          };
+var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
+var userSchema = new mongoose.Schema({
+    username : String,
+    password : String
+});
+var userModel = mongoConn.model('users', userSchema);
+
 exports.register = function() {
 	this.inherits('auth/auth_base');
 }
@@ -22,18 +37,15 @@ exports.hook_capabilities = function(next, connection) {
 
 exports.get_plain_passwd = function(user, cb) {
 	var pl = this;
-	var c = server.notes.mongoose;
-
-
-	var userModel = process.env.userModel;
-	var password = 'UNDEFINED';
 	var query = userModel.find({username : user});
-	query.exec(function (err, res){
-		if (err) {throw err;}
-		pl.loginfo('Callback get_plain_passwd');
-		return cb(res[0].password);
-	});
+    query.exec(function (err, res){
+        if (err) {throw err;}
+        if(res.length == 0){return callback(null);}
+        return cb(res[0].password);
+    });
 }
+
+
 
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
 	var plugin = this;   
@@ -42,4 +54,5 @@ exports.check_plain_passwd = function (connection, user, passwd, cb) {
 		
 		return cb(false);
 	});
+
 }
