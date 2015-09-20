@@ -26,6 +26,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+### Dependencies :
+- Haraka : https://haraka.github.io/
+- express : http://expressjs.com/
+- express-session : https://www.npmjs.com/package/express-session
+- body-parser : https://www.npmjs.com/package/body-parser
+- ini : https://www.npmjs.com/package/ini
+- mailparser : https://www.npmjs.com/package/mailparser
+- nodemailer : https://www.npmjs.com/package/nodemailer
 
 ## How to install
 ````bash
@@ -38,7 +46,9 @@ sudo sh EMInstall.sh
 - SMTP server (100%)
 - Installer (90%)
 - Web interface (40%)
+
 ### TODO
+
 - IMAP (0%)
 - POP3 (0%)
 - Console GUI (0%)
