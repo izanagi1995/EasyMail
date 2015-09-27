@@ -1,6 +1,9 @@
 // Current directory
 var rDir = __dirname;
 
+var firstRun = require('first-run');
+var bcrypt = require('bcrypt-nodejs');
+
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
@@ -14,6 +17,11 @@ var cp = require('child_process');
 var MailParser = require('mailparser').MailParser;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
+
+var IMAPServer = require('imapseagull'),
+    AppStorage = require('imapseagull-storage-mongo'),
+    fs = require('fs'),
+    path = require('path');
 
 var app = express();
 
@@ -32,7 +40,7 @@ var opt = {
 var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
 
 var userSchema = new mongoose.Schema({
-    username : String,
+    email : String,
     password : String
 });
 var mailSchema = new mongoose.Schema({
@@ -62,16 +70,38 @@ var mailSchema = new mongoose.Schema({
 var userModel = mongoConn.model('users', userSchema);
 var mailModel = mongoConn.model('mails', mailSchema);
 var allUsersQuery = userModel.find();
-allUsersQuery.exec(function(err, res){
-    if (err) {throw err;}
-    console.log('Registered users :');
-    for(var i in res){
-	   console.log(res[i].username);
-    }
-});
+
 var envir = [];
 envir['mongoUser'] = config.user;
 envir['mongoPass'] = config.pass;
+
+var users;
+
+allUsersQuery.exec(function(err, res){
+    if (err) {throw err;}
+    console.log('Registered users :');
+    users = res;
+    for(var i in res){
+       console.log(res[i].EasyMail);
+    }
+});
+
+if(firstRun()){
+    console.log('=========================================');
+    console.log('=======HEY! THIS IS THE FIRST RUN========');
+    console.log('=Welcome! We need to do some small steps=');
+    console.log('Then, the server will start automatically');
+    console.log('');
+    console.log('Encrypting your password...');
+    for(var i in users){
+        EasyMail.encryptPassword(users[i].email, function(err, n){
+            if(err) throw err;
+            console.log('Successfully encrypted user '+users[i].email);
+        });
+    }
+    
+
+}
 
 
 var haraka = cp.spawn('./node_modules/Haraka/bin/haraka', ['-c', 'haraka_run'], {env:envir});
@@ -85,8 +115,17 @@ haraka.stderr.on('data', function (data) {
     console.log('ERROR (Haraka) : ' + data);
 });
 
+exports.encryptPassword = function(user, callback){
+    EasyMail.getPassword(user, function(pass){
+        var encr = bcrypt.hashSync(pass);
+        userModel.update({email : user}, {password : encr}, null, function(err, num){
+            callback(err, num);
+        });
+    });
+}
+
 exports.getPassword = function(user, callback) {
-    var query = userModel.find({username : user});
+    var query = userModel.find({email : user});
     query.exec(function (err, res){
         if (err) {throw err;}
         if(res.length == 0){return callback(null);}
@@ -97,15 +136,28 @@ exports.getPassword = function(user, callback) {
 exports.checkPassword = function(user, inputPW, callback){
     EasyMail.getPassword(user, function(pwd){
         if(null===pwd){return callback(false);}
-        if(pwd===inputPW){
+        if(bcrypt.compareSync(inputPW, pwd)){
             return callback(true);
         }
         return callback(false);
     });
 }
 
-exports.queryUser = function(email, callback){
-    var query = userModel.find({username : email});
+exports.getAttachment = function(mail, attUID, callback){
+    var query = mailModel.findOne({uid: mail, 'attached_files.path': attUID});
+    query.exec(function (err, res){
+        if (err) {return callback(err, null);}
+        if(!res) return callback("Not Found", null);
+        for(var i=0; i < res.attached_files.length; i++){
+            if(res.attached_files[i].path === attUID){
+                return callback(null, res.attached_files[i]);
+            }
+        }
+    });
+}
+
+exports.queryUser = function(mail, callback){
+    var query = userModel.find({email : mail});
     query.exec(function (err, res){
         if (err) {throw err;}
         if(res.length == 0){return callback(null);}
@@ -227,6 +279,22 @@ app.get('/mails/:folder/view/:mail', function(req, res){
     }
 });
 
+app.get('/download/:mUID/:aUID', function(req, res){
+    var mail = req.params.mUID;
+    var attUID = req.params.aUID;
+    var file = path.join(rDir, 'attachments', attUID);
+    EasyMail.getAttachment(mail, attUID, function(err, att){
+        if(err){
+            res.render('wrong.html', {error : err});
+            return;
+        }
+        res.setHeader('Content-disposition', 'attachment; filename=' + att.name);
+        res.setHeader('Content-type', att.contentType);
+        var fstream = fs.createReadStream(file);
+        fstream.pipe(res);
+    });
+});
+
 app.get('/logout',function(req,res){
     req.session.destroy(function(err){
         if(err){
@@ -275,5 +343,90 @@ var server = app.listen(3000, function(){
     var host = server.address().address;
     var port = server.address().port;
     console.log('Example app listening at http://'+host+':'+port);
+
+});
+
+
+
+var NAME = 'izanagi1995.info';
+
+var storage = new AppStorage({
+    name: NAME,
+    debug: true,
+
+    // directory to keep attachments from emails
+    attachments_path: path.join(__dirname, './attachments/'),
+
+    // connection string for mongo
+    connection: 'mongodb://'+config.user+':'+config.pass+'@localhost:27017/easymail?auto_reconnect&authSource=admin',
+
+    // collections names
+    messages: 'mails',
+    users: 'users'
+});
+
+// function 'init' specified into AppStorage to provide availability to redefine it
+storage.init(function(err) {
+    if (err) throw new Error(err);
+
+    var imapServer = IMAPServer({
+
+        // Instead of imap-handler (https://github.com/andris9/imap-handler) you can choose
+        // wo-imap-handler (https://github.com/whiteout-io/imap-handler) or anything you want with same API
+        imapHandler: require('imap-handler'),
+
+        debug: true,
+        plugins: [
+            // List of plugins. It can be string for modules from lib//plugins/*.js or functions, that will be
+            // initialized as plugin_fn(<IMAPServer object>)
+            'ID', 'STARTTLS', 'AUTH-PLAIN', 'SPECIAL-USE', 'NAMESPACE', 'IDLE', /*'LOGINDISABLED',*/
+            'SASL-IR', 'ENABLE', 'LITERALPLUS', 'UNSELECT', 'CONDSTORE'
+        ],
+        id: {
+            name: NAME,
+            version: '1'
+        },
+        credentials: {
+            // just for example
+            key: fs.readFileSync(path.join(__dirname, './node_modules/imapseagull/tests/server.crt')),
+            cert: fs.readFileSync(path.join(__dirname, './node_modules/imapseagull/tests/server.key'))
+        },
+        secureConnection: false,
+        storage: storage,
+        folders: {
+            'INBOX': { // Inbox folder may be only here
+                'special-use': '\\Inbox',
+                type: 'personal'
+            },
+            '': {
+                folders: {
+                    'Drafts': {
+                        'special-use': '\\Drafts', // 'special-use' feature is in core of our IMAP implementation
+                        type: 'personal'
+                    },
+                    'Sent': {
+                        'special-use': '\\Sent',
+                        type: 'personal'
+                    },
+                    'Junk': {
+                        'special-use': '\\Junk',
+                        type: 'personal'
+                    },
+                    'Trash': {
+                        'special-use': '\\Trash',
+                        type: 'personal'
+                    }
+                }
+            }
+        }
+    });
+
+    imapServer.on('close', function() {
+        console.log('IMAP server %s closed', NAME);
+    });
+
+    imapServer.listen(143, function() {
+        console.log('IMAP server %s started', NAME);
+    });
 
 });

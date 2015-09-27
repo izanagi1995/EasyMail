@@ -21,7 +21,7 @@ var opt = {
 var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
 var userSchema = new mongoose.Schema({
     _id      : ObjectId,
-    username : String,
+    email : String,
     password : String
 });
 var mailSchema = new mongoose.Schema({
@@ -87,8 +87,8 @@ exports.parseMail = function(transaction, callback) {
     return mailparser;
 }
 
-exports.queryUser = function(email, callback){
-    var query = userModel.find({username : email});
+exports.queryUser = function(mail, callback){
+    var query = userModel.find({email : mail});
     query.exec(function (err, res){
         if (err) {throw err;}
         if(res.length == 0){return callback(null);}

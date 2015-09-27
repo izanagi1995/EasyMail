@@ -110,6 +110,6 @@ EOL
     sudo -u $REAL_USER mkdir -p $DIR/haraka_run/mails/$domain/$user/{INBOX,SENT,SPAM,TRASH}
 
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').createCollection('users',{autoIndexID:true})"
-    sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').users.insert({username:\"$user@$domain\",password:\"$pass\"})"
+    sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').users.insert({email:\"$user@$domain\",password:\"$pass\"})"
     sudo -u $REAL_USER echo $domain >> haraka_run/config/host_list
 fi

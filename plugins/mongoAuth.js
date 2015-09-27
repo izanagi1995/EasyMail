@@ -1,19 +1,19 @@
 var mongoose = require('mongoose');
 
 var net_utils = require('./net_utils');
-var crypto = require('crypto');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var opt = {
-               user: process.env.mongoUser,
-               pass: process.env.mongoPass,
-               auth: {
-                    authdb: 'admin'
-               }
-          };
+	user: process.env.mongoUser,
+	pass: process.env.mongoPass,
+	auth: {
+		authdb: 'admin'
+	}
+};
 var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
 var userSchema = new mongoose.Schema({
-    username : String,
+    email : String,
     password : String
 });
 var userModel = mongoConn.model('users', userSchema);
@@ -37,7 +37,7 @@ exports.hook_capabilities = function(next, connection) {
 
 exports.get_plain_passwd = function(user, cb) {
 	var pl = this;
-	var query = userModel.find({username : user});
+	var query = userModel.find({email : user});
     query.exec(function (err, res){
         if (err) {throw err;}
         if(res.length == 0){return callback(null);}
@@ -50,7 +50,7 @@ exports.get_plain_passwd = function(user, cb) {
 exports.check_plain_passwd = function (connection, user, passwd, cb) {
 	var plugin = this;   
 	this.get_plain_passwd(user, function (plain_pw) {
-		if (passwd == plain_pw) return cb(true);
+		if (bcrypt.compareSync(passwd, plain_pw)) return cb(true);
 		
 		return cb(false);
 	});
