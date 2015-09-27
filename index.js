@@ -82,7 +82,7 @@ allUsersQuery.exec(function(err, res){
     console.log('Registered users :');
     users = res;
     for(var i in res){
-       console.log(res[i].EasyMail);
+       console.log(res[i].email);
     }
 });
 
@@ -91,14 +91,16 @@ if(firstRun()){
     console.log('=======HEY! THIS IS THE FIRST RUN========');
     console.log('=Welcome! We need to do some small steps=');
     console.log('Then, the server will start automatically');
-    console.log('');
+    console.log(' ');
     console.log('Encrypting your password...');
-    for(var i in users){
-        EasyMail.encryptPassword(users[i].email, function(err, n){
-            if(err) throw err;
-            console.log('Successfully encrypted user '+users[i].email);
-        });
-    }
+    userModel.find().exec(function(err, res){
+        for(var i in res){
+            EasyMail.encryptPassword(res[i].email, function(err, n){
+            	if(err) throw err;
+            	console.log('Successfully encrypted user '+res[i].email);
+            });
+        }
+    });
     
 
 }
@@ -117,8 +119,11 @@ haraka.stderr.on('data', function (data) {
 
 exports.encryptPassword = function(user, callback){
     EasyMail.getPassword(user, function(pass){
+        console.log('Encrypting '+pass);	
         var encr = bcrypt.hashSync(pass);
+	console.log('result is '+encr);
         userModel.update({email : user}, {password : encr}, null, function(err, num){
+	    console.log('Hurra!');
             callback(err, num);
         });
     });
@@ -171,7 +176,6 @@ exports.getMails = function(user, domain, folder, limit, callback){
         var query = mailModel.find({user : userID, folder: "\\"+folder}).limit(limit);
         query.exec(function (err, res){
             if (err) {return callback(err, null);}
-            if(res.length == 0){return callback(null, null);}
             return callback(null, res);
         });
     });
