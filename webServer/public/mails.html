@@ -23,7 +23,7 @@
 	        $.post("http://test.izanagi1995.info:3000/send",{to:to,subject:subject,body:body},function(data){       
 	            if(data==='done')          
 	            {
-	                $("#editor").hide();
+	            	$("#editor").hide();
 	            }else{
 	            	alert('Oops!');
 	            }
@@ -41,9 +41,9 @@
 	<div id="menu-holder">
 		<ul id="menu">
 			<li class="title"><h1>WebMail</h1></li>
-			<li><a href="INBOX">Boite de reception</a></li>
-			<li><a href="SPAM">SPAM</a></li>
-			<li><a href="TRASH">Corbeille</a></li>
+			<li><a href="Inbox">Boite de reception</a></li>
+			<li><a href="Junk">SPAM</a></li>
+			<li><a href="Trash">Corbeille</a></li>
 		</ul>
 	</div>
 	<div id="holder">
@@ -54,7 +54,7 @@
 	<table id="mail-viewer">
 		<% var months = ["Jan.", "Fev.", "Mar.", "Avr.", "Mai", "Juin", "Juil.", "Aout", "Sep.", "Oct.", "Nov.", "Dec."]; %>
 	    <% for(var i=0; i<mails.length; i++){ %>
-			<tr class="mail" data-mail="view/<%= mails[i].file %>">
+			<tr class="mail" data-mail="view/<%= mails[i].uid %>">
 				<td class="from">
 					<% if(("name" in mails[i].from[0])&&mails[i].from[0].name.length > 0){ %>
 					<%= mails[i].from[0].name %>

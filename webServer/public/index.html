@@ -16,7 +16,7 @@ $(document).ready(function(){
         $.post("/login",{email:email,pass:pass},function(data){       
             if(data==='done')          
             {
-                window.location.href="/mails/INBOX";
+                window.location.href="/mails/Inbox";
             }else{
             	$(".message").text("Bad user or password");
             }

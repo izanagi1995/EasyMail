@@ -4,14 +4,18 @@ var rDir = __dirname;
 var express = require('express');
 var session = require('express-session');
 var bodyParser = require('body-parser');
+
 var mongoose = require('mongoose');
-var app = express();
+
 var ini = require('ini');
 var fs = require('fs');
 var cp = require('child_process');
+
 var MailParser = require('mailparser').MailParser;
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
+
+var app = express();
 
 var config = ini.parse(fs.readFileSync('config/mongodb', 'utf-8'));
 
@@ -19,25 +23,50 @@ var EasyMail = this;
 
 
 var opt = {
-               user: config.user,
-               pass: config.pass,
-               auth: {
-                    authdb: 'admin'
-               }
-          };
+    user: config.user,
+    pass: config.pass,
+    auth: {
+        authdb: 'admin'
+    }
+};
 var mongoConn = mongoose.createConnection('localhost', 'easymail', 27017, opt);
 
 var userSchema = new mongoose.Schema({
     username : String,
     password : String
 });
+var mailSchema = new mongoose.Schema({
+    html: String,
+    text: String,
+    headers: String,
+    subject : String,
+    messageId : String,
+    priority : String,
+    from : [{address: String, name: String}],
+    to : [{address: String, name: String}],
+    date : Date,
+    attached_files : [{
+        path: String,
+        name: String,
+        ext: String,
+        cid: String,
+        length: Number,
+        contentType: String
+    }],
+    internaldate : Date,
+    folder : String,
+    flags : [{type: String}],
+    user : [{type: mongoose.Schema.Types.ObjectId, ref: 'users'}],
+    uid: Number,
+});
 var userModel = mongoConn.model('users', userSchema);
+var mailModel = mongoConn.model('mails', mailSchema);
 var allUsersQuery = userModel.find();
 allUsersQuery.exec(function(err, res){
     if (err) {throw err;}
     console.log('Registered users :');
     for(var i in res){
-	console.log(res[i].username);
+	   console.log(res[i].username);
     }
 });
 var envir = [];
@@ -75,39 +104,36 @@ exports.checkPassword = function(user, inputPW, callback){
     });
 }
 
+exports.queryUser = function(email, callback){
+    var query = userModel.find({username : email});
+    query.exec(function (err, res){
+        if (err) {throw err;}
+        if(res.length == 0){return callback(null);}
+        return callback(res[0]);
+    });
+}
+
 exports.getMails = function(user, domain, folder, limit, callback){
-    var DOMAIN = __dirname + "/haraka_run/mails/" + domain;
-    var USER = DOMAIN + "/" + user;
-    var INBOX = USER + "/" + folder + "/";
-    var res = [];
-    fs.readdir(INBOX, function(err, files){
-        if(files.length==0){
-            return callback(null, []);
-        }
-        if(err){ return callback(err, res); }
-        files.forEach(function(file){
-            var mailparser = new MailParser();
-            mailparser.on("end", function(mObject){
-                mObject.file = file;
-                res.push(mObject);
-                if(res.length == files.length || res.length == limit){
-                    return callback(null, res);
-                }
-            });
-            fs.createReadStream(INBOX+file).pipe(mailparser);
+    this.queryUser(user+"@"+domain, function(res){
+        var userID = res._id;
+        var query = mailModel.find({user : userID, folder: "\\"+folder}).limit(limit);
+        query.exec(function (err, res){
+            if (err) {return callback(err, null);}
+            if(res.length == 0){return callback(null, null);}
+            return callback(null, res);
         });
-        
     });
 }
 exports.getMail = function(user, domain, folder, mail, callback){
-    var DOMAIN = __dirname + "/haraka_run/mails/" + domain;
-    var USER = DOMAIN + "/" + user;
-    var INBOX = USER + "/" + folder + "/";
-    var mailparser = new MailParser();
-    mailparser.on("end", function(mObject){
-        return callback(null, mObject);
+    this.queryUser(user+"@"+domain, function(res){
+        var userID = res._id;
+        var query = mailModel.findOne({user : userID, folder: "\\"+folder, uid: mail});
+        query.exec(function (err, res){
+            if (err) {return callback(err, null);}
+            if(!res) return callback("Not Found", null);
+            return callback(null, res);
+        });
     });
-    fs.createReadStream(INBOX+mail).pipe(mailparser);
 }
 
 var RES_FOLDER = __dirname + "/webServer/public";
@@ -151,7 +177,6 @@ app.post('/login',function(req,res){
     
 });
 
-
 app.get('/mails/:folder', function(req, res){
     var folder = req.params.folder;
     sess=req.session;
@@ -169,6 +194,7 @@ app.get('/mails/:folder', function(req, res){
                 // to get a value that is either negative, positive, or zero.
                 return new Date(b.date) - new Date(a.date);
             });
+            console.log(JSON.stringify(mObjects, null, 4));
             res.render('mails.html', {mails : mObjects, box: folder});
         });
     }
