@@ -68,6 +68,7 @@ sudo -u $REAL_USER cat >haraka_run/config/plugins << EOL
 auth/mongoAuth
 customMailQueue
 rcpt_to.in_host_list
+dkim_sign
 EOL
     echo "Haraka setup : OK"
 
@@ -108,8 +109,21 @@ EOL
     read -p 'User to configure (ex : test) : ' user < /dev/tty
     read -sp 'Password : ' pass < /dev/tty
     sudo -u $REAL_USER mkdir -p $DIR/haraka_run/mails/$domain/$user/{INBOX,SENT,SPAM,TRASH}
-
+    month=$(date -d "$D" '+%b' |  tr '[:upper:]' '[:lower:]')
+    year=$(date -d "$D" '+%Y')
+    sudo -u $REAL_USER sh node_modules/Haraka/config/dkim/dkim_key_gen.sh $domain
+sudo -u $REAL_USER cat >haraka_run/config/dkim_sign.ini << EOL
+enabled = true
+EOL
+    sudo -u $REAL_USER echo "selector = $month$year" >> haraka_run/config/dkim_sign.ini
+    sudo -u $REAL_USER echo "domain = $domain" >> haraka_run/config/dkim_sign.ini
+    sudo -u $REAL_USER echo "headers_to_sign = From, Sender, Reply-To, Subject, Date, Message-ID, To, Cc, MIME-Version" >> haraka_run/config/dkim_sign.ini
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').createCollection('users',{autoIndexID:true})"
+    sudo -u $REAL_USER cp $domain/private haraka_run/config/dkim.private.key
     sudo -u $REAL_USER mongo -u $mUser -p $mPass --authenticationDatabase admin --eval "db.getSiblingDB('easymail').users.insert({email:\"$user@$domain\",password:\"$pass\"})"
     sudo -u $REAL_USER echo $domain >> haraka_run/config/host_list
+    echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    echo "PLEASE READ THIS !!! DNS CONFIGURATION : SECTION DKIM"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    cat $domain/dns
 fi
