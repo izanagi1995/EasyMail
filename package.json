@@ -23,6 +23,7 @@
   "homepage": "https://github.com/izanagi1995/EasyMail",
   "dependencies": {
     "Haraka": "^2.6.1",
+    "haraka-net-utils": "1.0.8",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "^1.13.3",
     "ejs": "^2.3.3",

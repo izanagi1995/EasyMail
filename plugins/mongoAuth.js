@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 
-var net_utils = require('./net_utils');
+var net_utils = require('haraka-net-utils');
 var bcrypt = require('bcrypt-nodejs');
 
 
@@ -24,7 +24,7 @@ exports.register = function() {
 
 exports.hook_capabilities = function(next, connection) {
 	// Do not allow AUTH unless private IP or encrypted
-	if (!net_utils.is_rfc1918(connection.remote_ip) && !connection.using_tls) {
+	if (!net_utils.is_private_ip(connection.remote_ip) && !connection.using_tls) {
 		return next();
 	}
 
